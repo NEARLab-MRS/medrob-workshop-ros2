@@ -24,6 +24,7 @@ setup(
             'task3_forward_kinematics = so100_labs.task3_forward_kinematics:main',
             'task4_inverse_kinematics = so100_labs.task4_inverse_kinematics:main',
             'task5_cartesian = so100_labs.task5_cartesian:main',
+            'bonus_moveit_goals = so100_labs.bonus_moveit_goals:main',
         ],
     },
 )

@@ -10,7 +10,7 @@ code in `src/so100_labs/so100_labs/taskN_*.py`, wherever you see `TODO(student)`
 | 3   | Forward kinematics                 | homogeneous transforms, URDF, TF                         | [03](03_forward_kinematics.md) |
 | 4   | Inverse kinematics                 | Jacobian, damped least squares, reachability             | [04](04_inverse_kinematics.md) |
 | 5   | Cartesian paths and pick-and-place | straight-line motion, gripper, task sequencing           | [05](05_cartesian.md)          |
-| ★   | Bonus: MoveIt                      | motion planning with a real planner                      | [06](06_bonus_moveit.md)       |
+| ★   | Bonus: MoveIt                      | position + orientation constraints                       | [06](06_bonus_moveit.md)       |
 
 ## The workflow for every task
 
