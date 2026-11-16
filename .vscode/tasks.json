@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "colcon: build",
+      "type": "shell",
+      "command": "source /opt/ros/jazzy/setup.bash && colcon build --symlink-install",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "colcon: test",
+      "type": "shell",
+      "command": "source /opt/ros/jazzy/setup.bash && colcon test --packages-select lab_starter && colcon test-result --verbose",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}

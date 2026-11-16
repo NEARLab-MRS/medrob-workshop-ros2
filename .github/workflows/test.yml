@@ -1,0 +1,36 @@
+# Builds the workspace and runs the tests on every push.
+# Students see a green check or red X next to each commit on GitHub.
+name: Build and test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container: ros:jazzy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          apt-get update
+          apt-get install -y python3-pytest
+          rosdep update --rosdistro jazzy
+          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy
+
+      - name: Build
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build --symlink-install
+
+      - name: Test
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon test --packages-select lab_starter
+          colcon test-result --verbose
