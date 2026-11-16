@@ -1,6 +1,8 @@
-# Builds the workspace and runs the tests on every push.
-# Students see a green check or red X next to each commit on GitHub.
-name: Build and test
+# Builds the workspace and checks each lab on every push.
+# Each task is a separate job, so you see e.g. "Task 2 ✓  Task 3 ✗" on GitHub.
+#   unit tests : pure Python, src/so100_labs/test/test_taskN_*.py
+#   sim test   : runs your node against the simulated arm (mock hardware, no GUI)
+name: Labs
 
 on:
   push:
@@ -8,29 +10,53 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  lab:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
     container: ros:jazzy
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: 'Task 0 - turtle circle', task: task0 }
+          - { name: 'Task 1 - joint commands', task: task1 }
+          - { name: 'Task 2 - trajectories', task: task2 }
+          - { name: 'Task 3 - forward kinematics', task: task3 }
+          - { name: 'Task 4 - inverse kinematics', task: task4 }
+          - { name: 'Task 5 - Cartesian paths', task: task5 }
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
-        shell: bash
         run: |
           apt-get update
-          apt-get install -y python3-pytest
-          rosdep update --rosdistro jazzy
-          rosdep install --from-paths src --ignore-src -y --rosdistro jazzy
+          apt-get install -y --no-install-recommends python3-pytest python3-numpy \
+            ros-jazzy-turtlesim ros-jazzy-ros2-control ros-jazzy-ros2-controllers \
+            ros-jazzy-xacro ros-jazzy-robot-state-publisher ros-jazzy-tf2-ros-py \
+            ros-jazzy-nav2-common
 
       - name: Build
-        shell: bash
         run: |
           source /opt/ros/jazzy/setup.bash
-          colcon build --symlink-install
+          colcon build --symlink-install \
+            --packages-up-to lab_starter so100_labs so100_bringup so_arm100_description
 
-      - name: Test
-        shell: bash
+      - name: Unit tests
         run: |
-          source /opt/ros/jazzy/setup.bash
-          colcon test --packages-select lab_starter
-          colcon test-result --verbose
+          source install/setup.bash
+          if [ "${{ matrix.task }}" = task0 ]; then
+            python3 -m pytest -v -p no:cacheprovider src/lab_starter/test
+          else
+            python3 -m pytest -v -p no:cacheprovider src/so100_labs/test/test_${{ matrix.task }}_*.py
+          fi
+
+      - name: Simulation test
+        if: matrix.task != 'task0'
+        env:
+          SO100_SIM_TESTS: '1'
+        run: |
+          source install/setup.bash
+          python3 -m pytest -v -s -p no:cacheprovider src/so100_labs/test/integration -k ${{ matrix.task }}
