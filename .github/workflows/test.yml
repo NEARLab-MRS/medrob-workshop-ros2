@@ -41,6 +41,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: bfortuno/ros2-student-lab-solutions
+          # explicit ref: otherwise checkout asks the REST API for the default branch using
+          # GITHUB_TOKEN, which cannot see the private repo (only the deploy key can)
+          ref: main
           ssh-key: ${{ secrets.SOLUTIONS_DEPLOY_KEY }}
           path: _solutions
 
