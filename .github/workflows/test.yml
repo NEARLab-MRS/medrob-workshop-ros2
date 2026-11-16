@@ -2,6 +2,10 @@
 # Each task is a separate job, so you see e.g. "Task 2 ✓  Task 3 ✗" on GitHub.
 #   unit tests : pure Python, src/so100_labs/test/test_taskN_*.py
 #   sim test   : runs your node against the simulated arm (mock hardware, no GUI)
+#
+# In the original template repo, the exercises are TODO stubs, so the instructor's private
+# reference solutions are copied in first: green there means exercises and tests are consistent.
+# Students' copies (any other repository) always test the student's own code.
 name: Labs
 
 on:
@@ -27,8 +31,25 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+      IS_TEMPLATE: ${{ github.repository == 'bfortuno/ros2-student-lab' }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Use reference solutions (template repo only)
+        if: env.IS_TEMPLATE == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: bfortuno/ros2-student-lab-solutions
+          ssh-key: ${{ secrets.SOLUTIONS_DEPLOY_KEY }}
+          path: _solutions
+
+      - name: Copy solutions over the stubs (template repo only)
+        if: env.IS_TEMPLATE == 'true'
+        run: |
+          cp _solutions/so100_labs/task*.py src/so100_labs/so100_labs/
+          cp _solutions/lab_starter/turtle_circle.py src/lab_starter/lab_starter/
+          rm -rf _solutions
 
       - name: Install dependencies
         run: |
