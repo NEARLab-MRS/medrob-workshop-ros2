@@ -1,13 +1,19 @@
 {
-  "name": "ROS 2 Jazzy Student Lab",
-  "build": { "dockerfile": "Dockerfile" },
+  "name": "ROS 2 Jazzy - SO-100 Lab",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".",
+    // Prebuilt by .github/workflows/image.yml. If it can't be pulled, the image is built from scratch.
+    "cacheFrom": "ghcr.io/bfortuno/ros2-student-lab:jazzy"
+  },
 
   "features": {
     "ghcr.io/devcontainers/features/desktop-lite:1": {
       "password": "vscode",
       "webPort": "6080",
       "vncPort": "5901"
-    }
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {}
   },
 
   "remoteUser": "ubuntu",
@@ -45,6 +51,8 @@
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
         "python.analysis.extraPaths": ["/opt/ros/jazzy/lib/python3.12/site-packages"],
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["src/so100_labs/test", "src/lab_starter/test"],
         "files.exclude": { "build": true, "install": true, "log": true }
       }
     }

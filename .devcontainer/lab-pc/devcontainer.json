@@ -1,0 +1,39 @@
+// Lab PC configuration: same ROS environment as the codespace, plus USB access to the
+// real SO-100 and windows shown directly on the PC's screen (no browser desktop).
+// In VS Code: "Dev Containers: Reopen in Container" and pick "SO-100 Lab PC (real robot)".
+// One-time host setup: see docs/REAL_ROBOT.md (udev rule + `xhost +local:`).
+{
+  "name": "SO-100 Lab PC (real robot)",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": "..",
+    "cacheFrom": "ghcr.io/bfortuno/ros2-student-lab:jazzy"
+  },
+  "remoteUser": "ubuntu",
+  "updateRemoteUserUID": true,
+  "runArgs": [
+    "--network=host",
+    "--ipc=host",
+    "--privileged",
+    "--volume=/dev:/dev",
+    "--volume=/tmp/.X11-unix:/tmp/.X11-unix"
+  ],
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}",
+    "SO100_LAB_PC": "1"
+  },
+  "remoteEnv": {
+    "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST"
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "redhat.vscode-xml", "redhat.vscode-yaml"],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "python.analysis.extraPaths": ["/opt/ros/jazzy/lib/python3.12/site-packages"],
+        "files.exclude": { "build": true, "install": true, "log": true }
+      }
+    }
+  }
+}
