@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Lab 0 self-check: confirms ROS 2, the workspace and the desktop are working.
+# Self-check: confirms ROS 2, the workspace and the desktop are working.
 ok()   { echo "  [OK]   $1"; }
 fail() { echo "  [FAIL] $1"; FAILED=1; }
 FAILED=0
@@ -11,12 +11,18 @@ echo "Checking your ROS 2 lab environment..."
 
 command -v ros2 >/dev/null && ok "ros2 command available" || fail "ros2 command not found"
 
-ros2 pkg list 2>/dev/null | grep -q '^lab_starter$' && ok "lab_starter package is built" \
-  || fail "lab_starter not found. Run: cb   (or: colcon build && source install/setup.bash)"
+for pkg in lab_starter so100_bringup so100_labs; do
+  ros2 pkg list 2>/dev/null | grep -q "^$pkg\$" && ok "$pkg package is built" \
+    || fail "$pkg not found. Run: cb   (or: colcon build && source install/setup.bash)"
+done
 
 [ -n "$DISPLAY" ] && ok "DISPLAY is set to $DISPLAY" || fail "DISPLAY is not set"
 
-if command -v curl >/dev/null && curl -s -o /dev/null http://localhost:6080; then
+if [ -n "$SO100_LAB_PC" ]; then
+  ok "Lab PC mode: windows open directly on this screen"
+  [ -e /dev/so100 ] && ok "Robot found at /dev/so100" \
+    || echo "  [INFO] No robot at /dev/so100 (fine for simulation; see docs/REAL_ROBOT.md)"
+elif command -v curl >/dev/null && curl -s -o /dev/null http://localhost:6080; then
   ok "Desktop (noVNC) is running on port 6080"
 else
   fail "Desktop not reachable on port 6080. Check the PORTS tab."
