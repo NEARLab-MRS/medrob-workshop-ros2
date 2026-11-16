@@ -47,7 +47,9 @@ If your course doesn't use Gazebo, change `hostRequirements.cpus` to `2` in
 - **Grading:** `.github/workflows/test.yml` runs one job per task (unit tests + a headless
   simulation test with mock hardware), so each commit shows "Task N ✓/✗". With GitHub Classroom,
   use these job results for autograding, or add a `classroom.yml` that runs the same pytest
-  commands. The starter repo shows ✗ for every task by design.
+  commands. In students' copies every task shows ✗ until they complete it. In this template repo,
+  CI first copies in the reference solutions (private repo, read-only deploy key in the secret
+  `SOLUTIONS_DEPLOY_KEY`), so the template should always be green; red means a real problem.
 - **Reference solutions** are kept **outside** this public repo (the solution files replace
   `src/so100_labs/so100_labs/task*.py`). Verify with:
   `cp <solutions>/so100_labs/task*.py src/so100_labs/so100_labs/ && cb && pytest src/so100_labs/test
@@ -83,8 +85,8 @@ If your course doesn't use Gazebo, change `hostRequirements.cpus` to `2` in
   (including the `cb` build shortcut).
 - `sshd` feature: lets you (or a TA) open a terminal in a student's codespace via
   `gh codespace ssh`.
-- `.github/workflows/test.yml`: builds and tests every task on every push. All tasks fail until
-  students complete the TODOs, so the starter repo shows a red ✗ by design.
+- `.github/workflows/test.yml`: builds and tests every task on every push (against the reference
+  solutions in this repo, against the student's own code in their copies).
 - `.github/workflows/image.yml`: prebuilds the dev container image (only in this repo, not in
   student copies).
 
