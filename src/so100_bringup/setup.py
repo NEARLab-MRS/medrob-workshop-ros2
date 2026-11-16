@@ -24,4 +24,11 @@ setup(
     description='SO-100 bringup (mock / Gazebo / real) and safety tools.',
     license='Apache-2.0',
     tests_require=['pytest'],
+    entry_points={
+        'console_scripts': [
+            'safety_monitor = so100_bringup.safety_monitor:main',
+            'estop = so100_bringup.estop:main',
+            'calibrate = so100_bringup.calibrate:main',
+        ],
+    },
 )
