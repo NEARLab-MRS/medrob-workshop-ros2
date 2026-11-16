@@ -9,7 +9,8 @@ source /opt/ros/jazzy/setup.bash
 
 sudo apt-get update -qq || true
 rosdep update --rosdistro jazzy || echo "rosdep update failed (network?), continuing"
-rosdep install --from-paths "$WS/src" --ignore-src -y --rosdistro jazzy || \
+rosdep install --from-paths "$WS/src" --ignore-src -y --rosdistro jazzy \
+  --skip-keys "mujoco_ros2_control" || \
   echo "Some rosdep dependencies could not be installed, continuing"
 
 cd "$WS"
