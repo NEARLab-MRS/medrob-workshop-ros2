@@ -4,6 +4,9 @@
 # Keep it independent of src/ so the cache stays valid while students edit code.
 FROM osrf/ros:jazzy-desktop-full
 
+# Links the published image to this repository on GHCR (lets the workflow write to it).
+LABEL org.opencontainers.image.source="https://github.com/bfortuno/ros2-student-lab"
+
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
