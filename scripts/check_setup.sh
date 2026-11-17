@@ -20,17 +20,28 @@ done
 
 if [ -n "$SO100_LAB_PC" ]; then
   ok "Lab PC mode: windows open directly on this screen"
-  [ -e /dev/so100 ] && ok "Robot found at /dev/so100" \
-    || echo "  [INFO] No robot at /dev/so100 (fine for simulation; see docs/REAL_ROBOT.md)"
 elif command -v curl >/dev/null && curl -s -o /dev/null http://localhost:6080; then
   ok "Desktop (noVNC) is running on port 6080"
 else
   fail "Desktop not reachable on port 6080. Check the PORTS tab."
 fi
 
+if [ -e /dev/so100 ]; then
+  ok "Robot found at /dev/so100"
+elif [ -n "$SO100_LAB_PC" ]; then
+  echo "  [INFO] No robot at /dev/so100 (fine for simulation; see docs/REAL_ROBOT.md)"
+else
+  echo "  [INFO] No robot at /dev/so100 (fine for simulation). Robot on a MacBook:"
+  echo "         see docs/REAL_ROBOT.md > MacBook"
+fi
+
 echo
 if [ "$FAILED" = 0 ]; then
-  echo "All good! Open the PORTS tab, click the globe next to port 6080, and log in with password: vscode"
+  if [ -n "$SO100_LAB_PC" ]; then
+    echo "All good!"
+  else
+    echo "All good! Open the PORTS tab, click the globe next to port 6080, and log in with password: vscode"
+  fi
 else
   echo "Some checks failed. Ask your instructor or see README.md > Troubleshooting."
 fi
