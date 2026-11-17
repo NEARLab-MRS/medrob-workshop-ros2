@@ -35,3 +35,6 @@ gz service -s /world/so100_table/set_pose --reqtype gz.msgs.Pose --reptype gz.ms
 - Replace the straight-line descent with a single `arm.move_to(...)`. Watch the fingertips in RViz:
   do they still go straight down?
 - Why does the pick point have z = 1.3 cm and not 0?
+- Your path sends positions only. The controller then joins the points with straight lines, so
+  the joint velocities jump at every point: in RViz it looks fine, on the real robot you feel it as
+  vibration. How could you also send `velocities` to `arm.follow_trajectory` (as in Task 2)?

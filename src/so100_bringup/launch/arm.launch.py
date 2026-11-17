@@ -79,7 +79,8 @@ def _setup(context):
     else:
         actions.append(Node(
             package='controller_manager', executable='ros2_control_node', output='both',
-            parameters=[controllers_file],
+            parameters=[controllers_file] + (
+                [os.path.join(share, 'config', 'controllers_real.yaml')] if backend == 'real' else []),
             remappings=[('~/robot_description', '/robot_description')]))
 
     active = ('joint_trajectory_controller' if controller == 'trajectory'

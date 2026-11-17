@@ -14,6 +14,10 @@
         <xacro:if value="${backend == 'real'}">
           <plugin>feetech_ros2_driver/FeetechHardwareInterface</plugin>
           <param name="usb_port">${usb_port}</param>
+          <!-- Servo settings as in LeRobot's SO-100 setup. Acceleration 254 = no ramp in the servo:
+               it follows the controller's (already smooth) trajectory instead of lagging behind it. -->
+          <param name="acceleration">254</param>
+          <param name="max_speed">2400</param>
         </xacro:if>
       </hardware>
       <xacro:macro name="so100_joint" params="name">
@@ -21,6 +25,15 @@
           <param name="id">${cal['joints'][name]['id']}</param>
           <param name="offset">${cal['joints'][name]['offset']}</param>
           <param name="p_cofficient">${cal['joints'][name]['p_coefficient']}</param>
+          <param name="d_cofficient">32</param>
+          <param name="i_cofficient">0</param>
+          <param name="return_delay_time">0</param>
+          <xacro:if value="${name == 'gripper_joint'}">
+            <!-- LeRobot: keep the gripper from burning out when it squeezes an object -->
+            <param name="max_torque_limit">500</param>
+            <param name="protection_current">250</param>
+            <param name="overload_torque">25</param>
+          </xacro:if>
           <command_interface name="position" />
           <state_interface name="position">
             <param name="initial_value">${cal['joints'][name]['initial_position']}</param>
