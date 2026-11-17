@@ -69,8 +69,11 @@ jobs:
       - name: Build
         run: |
           source /opt/ros/jazzy/setup.bash
+          # feetech_ros2_driver (real robot only) needs libserial etc., which ros:jazzy lacks.
+          # --packages-ignore, not --packages-skip: skip would expect it to be installed already.
           colcon build --symlink-install \
-            --packages-up-to lab_starter so100_labs so100_bringup so_arm100_description
+            --packages-up-to lab_starter so100_labs so100_bringup so_arm100_description \
+            --packages-ignore feetech_ros2_driver
 
       - name: Unit tests
         run: |

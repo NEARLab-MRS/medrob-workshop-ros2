@@ -93,7 +93,7 @@ src/
 │   └── test/              #    unit tests + simulation tests
 ├── so100_bringup/         # launch files, robot config, safety tools (don't need to change)
 ├── lab_starter/           # turtlesim warm-up (Task 0)
-└── third_party/           # SO-100 robot description from the community (don't change)
+└── third_party/           # SO-100 description + patched servo driver from the community (don't change)
 docs/                      # task guides, real-robot guide
 ```
 
