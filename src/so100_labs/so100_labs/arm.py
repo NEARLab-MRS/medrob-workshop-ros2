@@ -178,11 +178,15 @@ class Arm(Node):
         return True
 
     def move_to(self, q, duration=None) -> bool:
-        """Move to joint vector `q` in a straight joint-space line."""
+        """Move to joint vector `q` in a straight joint-space line, starting and ending at rest.
+
+        The final point has zero velocity, so the controller interpolates a cubic that eases in
+        and out (peak speed 1.5x the average) instead of a line that starts and stops abruptly.
+        """
         if duration is None:
             delta = max(abs(a - b) for a, b in zip(q, self.joint_positions()))
             duration = max(1.0, 2.0 * delta / MAX_VELOCITY)
-        return self.follow_trajectory([duration], [q])
+        return self.follow_trajectory([duration], [q], velocities=[[0.0] * len(q)])
 
     def gripper(self, position: float, timeout: float = 5.0) -> bool:
         """Move the gripper joint to `position` [rad] (see GRIPPER_OPEN / GRIPPER_CLOSED)."""

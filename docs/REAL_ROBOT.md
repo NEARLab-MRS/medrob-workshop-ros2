@@ -37,6 +37,29 @@ does not change: only the launch command does.
 6. When done: `Ctrl+C` in terminal 1, **support the arm** (it goes limp when torque turns off), then
    switch the power off.
 
+## MacBook (Docker Desktop)
+
+Docker Desktop on a Mac cannot pass USB devices into a container, so the "SO-100 Lab PC" container
+never sees the robot (and has no screen to open RViz on). Instead, a small bridge on the Mac shares
+the robot's serial port over the network, and the container turns it back into `/dev/so100`:
+
+1. Open the repository in the **default** dev container (not "SO-100 Lab PC"). RViz opens in the
+   browser desktop on port 6080.
+2. Plug in the robot's USB and power. In a **Mac** terminal (not the container), in the repository
+   folder, start the bridge and leave it running (needs [uv](https://docs.astral.sh/uv/)):
+
+   ```bash
+   uv run --with pyserial scripts/mac_serial_bridge.py
+   ```
+
+3. In the container: `bash scripts/connect_robot.sh`, then `bash scripts/check_setup.sh` should
+   report _Robot found at /dev/so100_.
+4. Continue with step 4 of [Each session](#each-session). The safety rules are unchanged.
+
+If the bridge stops (Ctrl+C or the cable is unplugged), run `connect_robot.sh` again after
+restarting it. If the arm stutters or `controller_manager` warns about overruns, lower
+`update_rate` in `src/so100_bringup/config/controllers.yaml` (default 50 Hz) to 25.
+
 ## If something goes wrong
 
 | Situation                                    | Action                                                                                                                                          |
