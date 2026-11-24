@@ -123,7 +123,7 @@ def draw_square(arm, center=(0.0, -0.24, 0.05), side=0.08):
 
 
 # %% EX4 - Pick and place
-def pick_and_place(arm, pick=(0.08, -0.22, 0.013), place=(-0.08, -0.22, 0.013), hover=0.06):
+def pick_and_place(arm, pick=(0.08, -0.24, 0.013), place=(-0.08, -0.22, 0.013), hover=0.06):
     """Pick an object at `pick` and put it down at `place`.
 
     Sequence (every step must succeed, i.e. return True):
