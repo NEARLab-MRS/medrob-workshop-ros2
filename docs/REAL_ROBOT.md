@@ -1,112 +1,51 @@
 # Running your code on the real SO-100
 
-The real robot runs on a **lab PC** (Linux) in the _same_ container as your codespace. Your code
-does not change: only the launch command does.
+The real arm is connected to the instructor's MacBook. Your code does not change, only the launch
+command.
 
-> ⚠️ **Safety rules (every session)**
+> ⚠️ **Safety rules**
 >
-> 1. Clear the area around the arm. Nothing within 40 cm, including your face.
-> 2. Keep one hand near the **power switch** while the arm moves. It is the real emergency stop.
-> 3. Your code must pass its unit tests and run correctly in simulation first. The helper script
->    enforces this.
-> 4. Start slow (`speed 0.3`), then go faster only if everything looks right.
+> 1. Nothing within 40 cm of the arm, including your face.
+> 2. Keep one hand on the **power switch** while the arm moves. It is the emergency stop.
+> 3. Your code must pass its tests and work in simulation first (`run_on_robot.sh` checks this).
+> 4. Start slow (`speed 0.3`).
 
-## Each session
+## Steps
 
-1. On the lab PC, open VS Code in your repository (clone it the first time:
-   `git clone https://github.com/<you>/<your-repo>.git`), then `git pull`.
-2. **Command Palette → "Dev Containers: Reopen in Container" → "SO-100 Lab PC (real robot)"**. The
-   first time takes a few minutes.
-3. Plug in the robot's USB and power, then check: `bash scripts/check_setup.sh`. It should report
-   _Robot found at /dev/so100_.
-4. Terminal 1: start the robot (use the robot ID written on your arm, e.g. `arm3`):
-
-   ```bash
-   ros2 launch so100_bringup arm.launch.py backend:=real robot:=arm3
-   ```
-
-   The arm switches torque on and holds its current pose. RViz shows the real robot.
-
-5. Terminal 2: run a task (2–5) slowly:
-
-   ```bash
-   bash scripts/run_on_robot.sh task2          # speed 0.3 by default
-   bash scripts/run_on_robot.sh task4 0.5      # faster once you trust it
-   ```
-
-6. When done: `Ctrl+C` in terminal 1, **support the arm** (it goes limp when torque turns off), then
-   switch the power off.
-
-## MacBook (Docker Desktop)
-
-Docker Desktop on a Mac cannot pass USB devices into a container, so the "SO-100 Lab PC" container
-never sees the robot (and has no screen to open RViz on). Instead, a small bridge on the Mac shares
-the robot's serial port over the network, and the container turns it back into `/dev/so100`:
-
-1. Open the repository in the **default** dev container (not "SO-100 Lab PC"). RViz opens in the
-   browser desktop on port 6080.
-2. Plug in the robot's USB and power. In a **Mac** terminal (not the container), in the repository
-   folder, start the bridge and leave it running (needs [uv](https://docs.astral.sh/uv/)):
+1. Open your repository on the MacBook in the **default** dev container. RViz is on port 6080.
+2. Plug in the robot (USB + power). In a **Mac** terminal, in the repository folder, start the bridge
+   and leave it running:
 
    ```bash
    uv run --with pyserial scripts/mac_serial_bridge.py
    ```
 
-3. In the container: `bash scripts/connect_robot.sh`, then `bash scripts/check_setup.sh` should
-   report _Robot found at /dev/so100_.
-4. Continue with step 4 of [Each session](#each-session). The safety rules are unchanged.
+3. In the container:
 
-If the bridge stops (Ctrl+C or the cable is unplugged), run `connect_robot.sh` again after
-restarting it. If the arm stutters or `controller_manager` warns about overruns, lower
-`update_rate` in `src/so100_bringup/config/controllers.yaml` (default 50 Hz) to 25.
+   ```bash
+   bash scripts/connect_robot.sh                               # creates /dev/so100
+   ros2 launch so100_bringup arm.launch.py backend:=real robot:=arm3   # terminal 1
+   bash scripts/run_on_robot.sh task2                          # terminal 2 (tasks 2–5, speed 0.3)
+   bash scripts/run_on_robot.sh task4 0.5                      # faster once you trust it
+   ```
+
+4. When done: `Ctrl+C` in terminal 1, **hold the arm** (it goes limp), switch the power off.
+
+Task 1 is simulation only. If the bridge stops, restart it and run `connect_robot.sh` again.
 
 ## If something goes wrong
 
-| Situation                                    | Action                                                                                                                                          |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arm heading for a collision                  | **Power switch.**                                                                                                                               |
-| Want to stop now, arm safe to drop           | `ros2 run so100_bringup estop` (torque off, the arm falls, so support it). Resume with `estop --resume`                                         |
-| "SAFETY STOP" in terminal 1                  | The safety monitor saw a joint leave its safe range or move too fast. The trajectory was cancelled and the arm holds still. Check your targets. |
-| "Trajectory too fast" / "outside [..]" error | `Arm` refused to send your command. Fix your code (it would also fail in sim).                                                                  |
-| `/dev/so100` not found                       | USB cable/power; ask your instructor to check the udev rule (`ls /dev/ttyACM* /dev/ttyUSB*`)                                                    |
-| Robot pose in RViz ≠ real pose               | The robot needs (re)calibration (below)                                                                                                         |
+| Situation                         | Action                                                                     |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| Arm heading for a collision       | **Power switch.**                                                          |
+| Stop now, arm safe to drop        | `ros2 run so100_bringup estop` (arm falls, hold it). Resume: `--resume`    |
+| "SAFETY STOP" in terminal 1       | A joint left its safe range or moved too fast. Check your targets.         |
+| "Trajectory too fast" / "outside" | `Arm` refused your command. Fix your code.                                 |
+| `/dev/so100` not found            | Check USB/power, the bridge, and run `connect_robot.sh` again              |
+| RViz pose ≠ real pose             | Recalibrate (below)                                                        |
 
-What protects the robot, in order:
+## Calibration (once per robot)
 
-1. `Arm` (in `arm.py`) checks joint limits and speed before sending anything.
-2. On real hardware, `speed_scale` slows every trajectory down.
-3. The `safety_monitor` node (started automatically with `backend:=real`) watches the actual joints
-   and stops the trajectory if a joint goes past the tighter limits in
-   `so100_bringup/config/safety_limits.yaml` or moves faster than 1.5 rad/s.
-4. `forward_position_controller` (Task 1) is not available on the real robot.
-5. You, with your hand on the power switch.
-
-## Instructor: one-time lab PC setup
-
-1. Install Docker and VS Code with the _Dev Containers_ extension. Add the lab user to the `docker`
-   group.
-2. From a clone of this repo: `sudo bash scripts/install_udev_rules.sh` creates the `/dev/so100`
-   symlink. Replug the robot.
-3. Allow the container to open windows: add `xhost +local:` to the lab user's session startup (e.g.
-   `~/.xprofile`).
-4. Calibrate each robot once and commit the file (see below).
-
-### Calibration (once per robot, or after reassembly)
-
-The servos report raw positions (0–4095). The calibration maps them to the URDF angles. Run with
-**nothing else** using the robot (no `arm.launch.py`):
-
-```bash
-ros2 run so100_bringup calibrate --robot-id arm3
-```
-
-Torque turns off. Move the arm into the **zero pose**, which is the pose RViz shows when you run
-`ros2 launch so100_bringup arm.launch.py` (mock) with every joint at 0. Then press Enter. The
-offsets are saved to `src/so100_bringup/config/robots/arm3.yaml`. Run `cb`, then check with
-`backend:=real robot:=arm3` that RViz matches the real arm when you move it to a few poses. Commit
-the file to the template repo so all students get it.
-
-> The calibration script and the Feetech driver integration are written against the
-> `ros-jazzy-feetech-ros2-driver` 0.2.x apt release (software `offset` per joint). Newer driver
-> versions replace `offset` with `homing_offset`. Check `dpkg -l ros-jazzy-feetech-ros2-driver` if
-> calibration stops working after an image update.
+With nothing else using the robot: `ros2 run so100_bringup calibrate --robot-id arm3`. Move the arm
+to the zero pose (all joints at 0 in the mock RViz), press Enter, then `cb`. Commit
+`src/so100_bringup/config/robots/arm3.yaml`.

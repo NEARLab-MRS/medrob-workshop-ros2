@@ -2,7 +2,7 @@
 
     ros2 launch so100_bringup arm.launch.py                      # mock (RViz only)
     ros2 launch so100_bringup arm.launch.py backend:=gazebo      # physics simulation
-    ros2 launch so100_bringup arm.launch.py backend:=real robot:=arm3   # real robot (lab PC)
+    ros2 launch so100_bringup arm.launch.py backend:=real robot:=arm3   # real robot
 
     controller:=trajectory (default) -> joint_trajectory_controller is active
     controller:=position             -> forward_position_controller is active (sim only)
@@ -42,7 +42,7 @@ def _setup(context):
 
     if backend == 'real' and not os.path.exists(usb_port):
         return [LogInfo(msg=f'Robot not found at {usb_port}. Is the USB cable plugged in and the '
-                            'power on? Are you in the "SO-100 Lab PC" container? '
+                            'power on? Did you run scripts/connect_robot.sh? '
                             '(see docs/REAL_ROBOT.md)'), Shutdown()]
 
     calibration = os.path.join(share, 'config', 'robots', f'{robot}.yaml')

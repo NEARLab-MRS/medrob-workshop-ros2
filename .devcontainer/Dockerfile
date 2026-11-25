@@ -1,4 +1,4 @@
-# ROS 2 Jazzy + Gazebo Harmonic + SO-100 arm stack, for GitHub Codespaces and lab PCs.
+# ROS 2 Jazzy + Gazebo Harmonic + SO-100 arm stack, for GitHub Codespaces.
 # A prebuilt copy (including the desktop) is published to ghcr.io by .github/workflows/image.yml
 # and used as a build cache, so codespaces start in ~1-2 minutes instead of ~10.
 # Keep it independent of src/ so the cache stays valid while students edit code.
