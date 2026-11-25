@@ -8,12 +8,13 @@ WS="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 declare -A EXE=(
   [task2]=task2_trajectories [task3]=task3_forward_kinematics
   [task4]=task4_inverse_kinematics [task5]=task5_cartesian
+  [task6]=task6_pid_control
 )
 if [ "$TASK" = task1 ]; then
   echo "Task 1 uses forward_position_controller, which is disabled on the real robot"
-  echo "(it would jump straight to each command). Run tasks 2-5 on the robot."; exit 1
+  echo "(it would jump straight to each command). Run tasks 2-6 on the robot."; exit 1
 fi
-[ -n "${EXE[$TASK]}" ] || { echo "usage: $0 task2|task3|task4|task5 [speed]"; exit 1; }
+[ -n "${EXE[$TASK]}" ] || { echo "usage: $0 task2|task3|task4|task5|task6 [speed]"; exit 1; }
 awk -v s="$SPEED" 'BEGIN{exit !(s>=0.1 && s<=1.0)}' || { echo "speed must be in [0.1, 1.0]"; exit 1; }
 
 source "$WS/install/setup.bash"

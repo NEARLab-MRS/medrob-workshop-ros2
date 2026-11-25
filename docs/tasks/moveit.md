@@ -38,3 +38,10 @@ oc.weight = 1.0
 
 - Tighten goal 2's tolerances to 0.02 rad. What happens to planning time?
 - Redo Task 5's pick-and-place with MoveIt goals.
+
+## Is the gripper really there?
+
+`bonus_moveit_goals` also prints how far the measured TCP is from the target. Run it again with
+`arm.launch.py rviz:=false sag:=true` (a mock arm that sags like the real one): MoveIt still says
+`SUCCESS`, but the gripper is 1–3 cm off. MoveIt assumes _commanded = actual_. Task 6 fixes that:
+[06_pid_control.md](06_pid_control.md).

@@ -6,6 +6,7 @@
 
     controller:=trajectory (default) -> joint_trajectory_controller is active
     controller:=position             -> forward_position_controller is active (sim only)
+    sag:=true                        -> mock arm sags under gravity like the real one (Task 6)
 """
 import os
 
@@ -30,6 +31,7 @@ def _setup(context):
     robot = context.launch_configurations['robot']
     usb_port = context.launch_configurations['usb_port']
     world = context.launch_configurations['world']
+    sag = context.launch_configurations['sag'] == 'true'
 
     if backend not in ('mock', 'gazebo', 'real'):
         return [LogInfo(msg=f"Unknown backend '{backend}'. Use mock, gazebo or real."), Shutdown()]
@@ -44,6 +46,10 @@ def _setup(context):
         return [LogInfo(msg=f'Robot not found at {usb_port}. Is the USB cable plugged in and the '
                             'power on? Did you run scripts/connect_robot.sh? '
                             '(see docs/REAL_ROBOT.md)'), Shutdown()]
+
+    if sag and backend != 'mock':
+        return [LogInfo(msg='sag:=true only works with backend:=mock (the real robot sags by '
+                            'itself).'), Shutdown()]
 
     calibration = os.path.join(share, 'config', 'robots', f'{robot}.yaml')
     if not os.path.exists(calibration):
@@ -85,11 +91,22 @@ def _setup(context):
 
     active = ('joint_trajectory_controller' if controller == 'trajectory'
               else 'forward_position_controller')
-    spawn = ['joint_state_broadcaster', 'gripper_controller', active]
+    spawn = ['gripper_controller', active]
+    # sag:=true: the broadcaster publishes the mock's perfect positions elsewhere, and
+    # so100_labs' servo_sag_sim publishes sagged ones on /joint_states (see so100_labs/sag_sim.py).
+    # Started by name only: so100_labs depends on this package, not the other way round.
+    jsb_args = (['--controller-ros-args', '-r joint_states:=/so100/commanded_joint_states']
+                if sag else [])
+    actions.append(Node(
+        package='controller_manager', executable='spawner', output='screen',
+        arguments=['joint_state_broadcaster', '--controller-manager-timeout', '60'] + jsb_args,
+        parameters=[{'use_sim_time': sim_time}]))
     actions.append(Node(
         package='controller_manager', executable='spawner', output='screen',
         arguments=spawn + ['--controller-manager-timeout', '60'],
         parameters=[{'use_sim_time': sim_time}]))
+    if sag:
+        actions.append(Node(package='so100_labs', executable='servo_sag_sim', output='screen'))
 
     # The other arm controller is loaded but inactive, so students can switch with
     #   ros2 control switch_controllers --activate X --deactivate Y
@@ -124,6 +141,8 @@ def generate_launch_description():
         DeclareLaunchArgument('rviz', default_value='true'),
         DeclareLaunchArgument('gazebo_gui', default_value='false',
                               description='Show the Gazebo window (slow without a GPU)'),
+        DeclareLaunchArgument('sag', default_value='false',
+                              description='mock only: simulate gravity sag of the servos'),
         DeclareLaunchArgument('robot', default_value='default',
                               description='Calibration file name in config/robots/'),
         DeclareLaunchArgument('usb_port', default_value='/dev/so100'),

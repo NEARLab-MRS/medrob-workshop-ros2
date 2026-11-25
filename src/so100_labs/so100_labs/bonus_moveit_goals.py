@@ -10,8 +10,12 @@ PROVIDED example (no TODOs). Plans and executes three goals for the SAME target 
      move inside it; wrist_roll only spins about the approach axis). That is why Task 4
      solves for xyz + pitch: exactly the 4 things the first 4 joints can control.
 
+MoveIt reports SUCCESS when the *planned* trajectory has been executed. It does not check where
+the gripper really ended up: on the real robot (or with `arm.launch.py sag:=true`) the TCP is
+several millimetres from the target, because the servos sag under gravity. Task 6 fixes that.
+
 Run:
-    ros2 launch so100_bringup arm.launch.py rviz:=false        # terminal 1
+    ros2 launch so100_bringup arm.launch.py rviz:=false        # terminal 1 (add sag:=true)
     ros2 launch so100_bringup moveit.launch.py                 # terminal 2 (RViz)
     ros2 run so100_labs bonus_moveit_goals                     # terminal 3
     ros2 run so100_labs bonus_moveit_goals --ros-args -p plan_only:=true   # plan, don't move
@@ -169,9 +173,11 @@ def main():
             node.move_to(POSES['home'])
             code = node.send(constraints)
             if code == MoveItErrorCodes.SUCCESS:
-                node.sleep(0.5)
+                node.sleep(1.0)
+                tcp = node.tcp_position()  # measured: TF is computed from /joint_states
                 extra = '' if node.plan_only else (
-                    f', TCP at {np.round(node.tcp_position(), 3)}, '
+                    f', TCP at {np.round(tcp, 3)}, '
+                    f'{1000 * np.linalg.norm(tcp - np.array(TARGET)):.1f} mm from the target, '
                     f'gripper tilted {node.tilt_from_down_deg():.0f} deg from straight down')
                 node.get_logger().info(f'{name}: SUCCESS{extra}')
             else:
