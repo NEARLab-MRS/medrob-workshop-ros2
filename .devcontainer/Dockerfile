@@ -1,11 +1,11 @@
-# ROS 2 Jazzy + Gazebo Harmonic + SO-100 arm stack, for GitHub Codespaces and lab PCs.
+# ROS 2 Jazzy + Gazebo Harmonic + SO-100 arm stack, for GitHub Codespaces.
 # A prebuilt copy (including the desktop) is published to ghcr.io by .github/workflows/image.yml
 # and used as a build cache, so codespaces start in ~1-2 minutes instead of ~10.
 # Keep it independent of src/ so the cache stays valid while students edit code.
 FROM osrf/ros:jazzy-desktop-full
 
 # Links the published image to this repository on GHCR (lets the workflow write to it).
-LABEL org.opencontainers.image.source="https://github.com/bfortuno/ros2-student-lab"
+LABEL org.opencontainers.image.source="https://github.com/NEARLab-MRS/medrob-workshop-ros2"
 
 ENV DEBIAN_FRONTEND=noninteractive
 

@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile",
     "context": ".",
     // Prebuilt by .github/workflows/image.yml. If it can't be pulled, the image is built from scratch.
-    "cacheFrom": "ghcr.io/bfortuno/ros2-student-lab:jazzy"
+    "cacheFrom": "ghcr.io/nearlab-mrs/medrob-workshop-ros2:jazzy"
   },
 
   "features": {

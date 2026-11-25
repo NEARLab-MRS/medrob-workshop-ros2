@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    if: github.repository == 'bfortuno/ros2-student-lab'
+    if: github.repository == 'NEARLab-MRS/medrob-workshop-ros2'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -34,7 +34,7 @@ jobs:
         uses: devcontainers/ci@v0.3
         with:
           subFolder: .
-          imageName: ghcr.io/${{ github.repository }}
+          imageName: ghcr.io/nearlab-mrs/medrob-workshop-ros2   # GHCR names must be lowercase
           imageTag: jazzy
-          cacheFrom: ghcr.io/${{ github.repository }}:jazzy
+          cacheFrom: ghcr.io/nearlab-mrs/medrob-workshop-ros2:jazzy
           push: always

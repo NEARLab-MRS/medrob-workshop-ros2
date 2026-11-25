@@ -1,4 +1,4 @@
-"""Record servo offsets for one SO-100 (run on the lab PC, robot NOT running in ROS).
+"""Record servo offsets for one SO-100 (robot NOT running in ROS).
 
     ros2 run so100_bringup calibrate --robot-id arm3 [--port /dev/so100]
 

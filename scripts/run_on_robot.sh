@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run one of your SO-100 tasks on the REAL robot (lab PC only), slowed down.
+# Run one of your SO-100 tasks on the REAL robot (see docs/REAL_ROBOT.md), slowed down.
 #   bash scripts/run_on_robot.sh task2 [speed]      speed: 0.1 .. 1.0 (default 0.3)
 # Refuses to run unless that task's unit tests pass ("simulation first").
 set -e
