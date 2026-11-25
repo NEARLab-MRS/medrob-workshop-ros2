@@ -32,7 +32,7 @@ jobs:
       run:
         shell: bash
     env:
-      IS_TEMPLATE: ${{ github.repository == 'bfortuno/ros2-student-lab' }}
+      IS_TEMPLATE: ${{ github.repository == 'NEARLab-MRS/medrob-workshop-ros2' }}
     steps:
       - uses: actions/checkout@v4
 
