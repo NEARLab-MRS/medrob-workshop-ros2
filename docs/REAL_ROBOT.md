@@ -25,7 +25,7 @@ command.
    ```bash
    bash scripts/connect_robot.sh                               # creates /dev/so100
    ros2 launch so100_bringup arm.launch.py backend:=real robot:=arm3   # terminal 1
-   bash scripts/run_on_robot.sh task2                          # terminal 2 (tasks 2–5, speed 0.3)
+   bash scripts/run_on_robot.sh task2                          # terminal 2 (tasks 2–6, speed 0.3)
    bash scripts/run_on_robot.sh task4 0.5                      # faster once you trust it
    ```
 

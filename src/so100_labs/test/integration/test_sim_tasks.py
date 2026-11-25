@@ -4,7 +4,7 @@ Skipped by default. Run them after `colcon build` and `source install/setup.bash
 
     SO100_SIM_TESTS=1 python3 -m pytest src/so100_labs/test/integration -k task2 -v
 
-Each test starts `arm.launch.py backend:=mock rviz:=false`, runs
+Each test starts `arm.launch.py backend:=mock rviz:=false` (Task 6 adds `sag:=true`), runs
 `ros2 run so100_labs <task>` and checks that it exits successfully and that the
 arm ends in the expected pose.
 """
@@ -41,12 +41,14 @@ def _wait_for_controllers(expected, timeout=60):
 
 @pytest.fixture
 def arm_sim(request, monkeypatch):
-    controller = getattr(request, 'param', 'trajectory')
+    param = getattr(request, 'param', 'trajectory')
+    controller = 'trajectory' if param == 'sag' else param
+    extra = ['sag:=true'] if param == 'sag' else []
     # Private DDS domain per test: stray nodes from earlier runs can't interfere.
     monkeypatch.setenv('ROS_DOMAIN_ID', str(random.randint(1, 100)))
     proc = subprocess.Popen(
         ['ros2', 'launch', 'so100_bringup', 'arm.launch.py', 'backend:=mock', 'rviz:=false',
-         f'controller:={controller}'],
+         f'controller:={controller}'] + extra,
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
     try:
         active = ('joint_trajectory_controller' if controller == 'trajectory'
@@ -90,9 +92,9 @@ def _final_joint_positions():
     return [msg.position[msg.name.index(j)] for j in ARM_JOINTS]
 
 
-def _assert_at_home():
+def _assert_at_home(tolerance=0.02):
     q = _final_joint_positions()
-    assert q == pytest.approx(HOME, abs=0.02), f'arm should end at home, is at {q}'
+    assert q == pytest.approx(HOME, abs=tolerance), f'arm should end at home, is at {q}'
 
 
 @pytest.mark.parametrize('arm_sim', ['position'], indirect=True)
@@ -120,3 +122,10 @@ def test_task4_inverse_kinematics(arm_sim):
 def test_task5_cartesian(arm_sim):
     assert _run_task('task5_cartesian', timeout=240) == 0
     _assert_at_home()
+
+
+@pytest.mark.parametrize('arm_sim', ['sag'], indirect=True)
+def test_task6_pid_control(arm_sim):
+    # exits non-zero unless the PID brings the sagging arm within 3 mm of both targets
+    assert _run_task('task6_pid_control', timeout=120) == 0
+    _assert_at_home(tolerance=0.08)  # the final move home is open loop, so it sags again

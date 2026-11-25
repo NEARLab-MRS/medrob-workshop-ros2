@@ -31,7 +31,7 @@ ros2 run lab_starter turtle_circle     # terminal 2
 colcon test --packages-select lab_starter && colcon test-result --verbose
 ```
 
-## 3. Arm labs (Tasks 1–5)
+## 3. Arm labs (Tasks 1–6)
 
 Follow **[docs/tasks/README.md](docs/tasks/README.md)**. When your code works in simulation, run it
 on the real arm: **[docs/REAL_ROBOT.md](docs/REAL_ROBOT.md)**.

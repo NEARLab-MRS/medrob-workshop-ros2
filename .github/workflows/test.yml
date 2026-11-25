@@ -28,6 +28,7 @@ jobs:
           - { name: 'Task 3 - forward kinematics', task: task3 }
           - { name: 'Task 4 - inverse kinematics', task: task4 }
           - { name: 'Task 5 - Cartesian paths', task: task5 }
+          - { name: 'Task 6 - PID control', task: task6 }
     defaults:
       run:
         shell: bash

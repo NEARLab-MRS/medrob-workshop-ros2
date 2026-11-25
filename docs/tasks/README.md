@@ -1,6 +1,6 @@
 # SO-100 arm labs
 
-Five tasks, from joint commands to pick-and-place. Write your code in
+Six tasks, from joint commands to pick-and-place and closed-loop control. Write your code in
 `src/so100_labs/so100_labs/taskN_*.py`, wherever you see `TODO`.
 
 | #   | Task                               | You learn                                     | Guide                          |
@@ -10,7 +10,8 @@ Five tasks, from joint commands to pick-and-place. Write your code in
 | 3   | Forward kinematics                 | homogeneous transforms, URDF, TF              | [03](03_forward_kinematics.md) |
 | 4   | Inverse kinematics                 | Jacobian, damped least squares, reachability  | [04](04_inverse_kinematics.md) |
 | 5   | Cartesian paths and pick-and-place | straight-line motion, gripper, task sequences | [05](05_cartesian.md)          |
-| ★   | Bonus: MoveIt                      | position + orientation constraints            | [06](06_bonus_moveit.md)       |
+| ★   | MoveIt                             | planning, orientation constraints             | [MoveIt](moveit.md)            |
+| 6   | PID joint control                  | feedback, steady-state error, PID, tuning     | [06](06_pid_control.md)        |
 
 ## Workflow (every task)
 
@@ -27,7 +28,8 @@ ros2 run so100_labs task2_trajectories                # watch it move in RViz
 When you push, GitHub runs the tests and shows "Task N ✓/✗" next to your commit (Actions tab).
 
 **Simulators:** `arm.launch.py` (default) is a perfect, instant robot. `arm.launch.py backend:=gazebo`
-adds physics, a table and a cube (Task 5). Real robot: [REAL_ROBOT.md](../REAL_ROBOT.md).
+adds physics, a table and a cube (Task 5). `arm.launch.py sag:=true` sags under gravity like the
+real arm (Task 6). Real robot: [REAL_ROBOT.md](../REAL_ROBOT.md).
 
 ## Coordinate frame
 

@@ -9,6 +9,7 @@ the same controllers:
     /joint_states                                          sensor_msgs/JointState
     /forward_position_controller/commands                  std_msgs/Float64MultiArray
     /joint_trajectory_controller/follow_joint_trajectory   control_msgs/FollowJointTrajectory
+    /joint_trajectory_controller/joint_trajectory          trajectory_msgs/JointTrajectory
     /gripper_controller/gripper_cmd                        control_msgs/ParallelGripperCommand
     TF  base_link -> tcp_link
 
@@ -37,6 +38,11 @@ from so100_labs.robot_model import (ARM_JOINTS, GRIPPER_JOINT, LOWER, MAX_VELOCI
                                     UPPER)
 
 
+# stream_position(): the largest allowed distance [rad] between a streamed command and the
+# measured position. A PID correction is a few degrees; anything bigger is a bug.
+MAX_STREAM_STEP = 0.25
+
+
 class SafetyError(ValueError):
     """Raised when a command would violate joint or velocity limits."""
 
@@ -57,6 +63,9 @@ class Arm(Node):
         self._position_pub = self.create_publisher(
             Float64MultiArray, '/forward_position_controller/commands', 10)
         self._marker_pub = self.create_publisher(MarkerArray, '/so100_labs/markers', 10)
+        self._stream_pub = self.create_publisher(
+            JointTrajectory, '/joint_trajectory_controller/joint_trajectory', 10)
+        self._last_stream = None
         self._trajectory_client = ActionClient(
             self, FollowJointTrajectory, '/joint_trajectory_controller/follow_joint_trajectory')
         self._gripper_client = ActionClient(
@@ -187,6 +196,34 @@ class Arm(Node):
             delta = max(abs(a - b) for a, b in zip(q, self.joint_positions()))
             duration = max(1.0, 2.0 * delta / MAX_VELOCITY)
         return self.follow_trajectory([duration], [q], velocities=[[0.0] * len(q)])
+
+    def stream_position(self, q, dt: float):
+        """Task 6: command `q` to be reached in `dt` seconds, without waiting.
+
+        Call it in a loop (e.g. 20 times per second) to steer the arm continuously. It publishes a
+        one-point trajectory on joint_trajectory_controller's topic, which replaces the previous
+        one, so it works on every backend, including the real robot.
+        Raises SafetyError if `q` is outside the limits, more than MAX_STREAM_STEP away from the
+        measured position, or too far from the previous command for `dt`.
+        """
+        self.check_limits(q)
+        if dt <= 0:
+            raise SafetyError('dt must be > 0')
+        measured = self.joint_positions()
+        far = max(abs(a - b) for a, b in zip(q, measured))
+        if far > MAX_STREAM_STEP:
+            raise SafetyError(f'Streamed command is {far:.2f} rad from the measured position '
+                              f'(limit {MAX_STREAM_STEP}). Use move_to() for big moves.')
+        prev, now = self._last_stream, time.monotonic()
+        if prev is not None and now - prev[0] < 1.0:
+            jump = max(abs(a - b) for a, b in zip(q, prev[1]))
+            if jump > MAX_VELOCITY * max(dt, now - prev[0]) * 1.05:
+                raise SafetyError(f'Streamed command jumps {jump:.3f} rad in {dt:.3f} s '
+                                  f'(limit {MAX_VELOCITY} rad/s)')
+        self._last_stream = (now, [float(v) for v in q])
+        point = JointTrajectoryPoint(positions=[float(v) for v in q],
+                                     time_from_start=_duration(dt))
+        self._stream_pub.publish(JointTrajectory(joint_names=ARM_JOINTS, points=[point]))
 
     def gripper(self, position: float, timeout: float = 5.0) -> bool:
         """Move the gripper joint to `position` [rad] (see GRIPPER_OPEN / GRIPPER_CLOSED)."""
